@@ -15,6 +15,7 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.neoforged.neoforge.transfer.CombinedResourceHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import org.jetbrains.annotations.NotNull;
@@ -63,7 +64,7 @@ public class MaidFeedAnimalTask extends MaidCheckRateTask {
                 if (slot != -1) {
                     ItemStack food = ItemsUtil.extractItem(availableInv, slot, 1, false, null);
                     if (!food.isEmpty()) {
-                        maid.swing(InteractionHand.MAIN_HAND);
+                        maid.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT);
                         feedEntity.setInLove(null);
                         if (maid.getOwner() instanceof ServerPlayer serverPlayer) {
                             InitTrigger.MAID_EVENT.get().trigger(serverPlayer, TriggerType.MAID_FEED_ANIMAL);

@@ -7,21 +7,29 @@ import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
 import com.github.tartaricacid.touhoulittlemaid.init.InitItems;
 import com.github.tartaricacid.touhoulittlemaid.util.IdentifierUtil;
 import com.github.tartaricacid.touhoulittlemaid.util.migrate.EntityTypeUtil;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.data.PackOutput;
+import net.minecraft.advancements.Advancement;
+import net.minecraft.core.registries.MultiRegistryBootstrap;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.Recipe;
 import net.neoforged.neoforge.common.Tags;
 
-import java.util.concurrent.CompletableFuture;
-
 public class RecipeGenerator extends RecipeProvider {
-    public RecipeGenerator(HolderLookup.Provider registries, RecipeOutput output) {
-        super(registries, output);
+    /**
+     * 26.3 起配方也成了数据包注册表：{@code RecipeProvider.Runner} 没了，改成由
+     * {@link RecipeProvider#asBootstrap} 产出一个 {@link MultiRegistryBootstrap}
+     * （同时写 {@code Registries.RECIPE} 与配方解锁用的 {@code Registries.ADVANCEMENT}），
+     * 挂到 {@link RegistryDataGenerator#RELOADABLE_BUILDER} 上。
+     */
+    public static final MultiRegistryBootstrap BOOTSTRAP = RecipeProvider.asBootstrap(RecipeGenerator::new);
+
+    public RecipeGenerator(BootstrapContext<Recipe<?>> recipes, BootstrapContext<Advancement> advancements) {
+        super(recipes, advancements);
     }
 
     @SuppressWarnings("all")
@@ -158,23 +166,23 @@ public class RecipeGenerator extends RecipeProvider {
 
         AltarRecipeBuilder.shapeless(items, InitItems.MAID_BACKPACK_BIG)
                 .power(0.3F)
-                .requires(4, Items.GRAY_WOOL)
+                .requires(4, Items.WOOL.gray())
                 .requires(Tags.Items.GEMS_DIAMOND)
-                .requires(Items.GRAY_WOOL)
+                .requires(Items.WOOL.gray())
                 .save(recipeOutput);
 
         AltarRecipeBuilder.shapeless(items, InitItems.MAID_BACKPACK_MIDDLE)
                 .power(0.2F)
-                .requires(4, Items.PINK_WOOL)
+                .requires(4, Items.WOOL.pink())
                 .requires(Tags.Items.INGOTS_GOLD)
-                .requires(Items.PINK_WOOL)
+                .requires(Items.WOOL.pink())
                 .save(recipeOutput);
 
         AltarRecipeBuilder.shapeless(items, InitItems.MAID_BACKPACK_SMALL)
                 .power(0.1F)
-                .requires(4, Items.RED_WOOL)
+                .requires(4, Items.WOOL.red())
                 .requires(Tags.Items.INGOTS_IRON)
-                .requires(Items.RED_WOOL)
+                .requires(Items.WOOL.red())
                 .save(recipeOutput);
 
         AltarRecipeBuilder.shapeless(items, InitItems.MAID_BEACON)
@@ -189,43 +197,43 @@ public class RecipeGenerator extends RecipeProvider {
 
         AltarRecipeBuilder.shapeless(items, InitItems.PINK_MAID_BED)
                 .power(0.2F)
-                .requires(Items.PINK_WOOL)
+                .requires(Items.WOOL.pink())
                 .requires(ItemTags.PLANKS)
                 .save(recipeOutput);
 
         AltarRecipeBuilder.shapeless(items, InitItems.WHITE_MAID_BED)
                 .power(0.2F)
-                .requires(Items.WHITE_WOOL)
+                .requires(Items.WOOL.white())
                 .requires(ItemTags.PLANKS)
                 .save(recipeOutput);
 
         AltarRecipeBuilder.shapeless(items, InitItems.BLACK_MAID_BED)
                 .power(0.2F)
-                .requires(Items.BLACK_WOOL)
+                .requires(Items.WOOL.black())
                 .requires(ItemTags.PLANKS)
                 .save(recipeOutput);
 
         AltarRecipeBuilder.shapeless(items, InitItems.YELLOW_MAID_BED)
                 .power(0.2F)
-                .requires(Items.YELLOW_WOOL)
+                .requires(Items.WOOL.yellow())
                 .requires(ItemTags.PLANKS)
                 .save(recipeOutput);
 
         AltarRecipeBuilder.shapeless(items, InitItems.BLUE_MAID_BED)
                 .power(0.2F)
-                .requires(Items.BLUE_WOOL)
+                .requires(Items.WOOL.blue())
                 .requires(ItemTags.PLANKS)
                 .save(recipeOutput);
 
         AltarRecipeBuilder.shapeless(items, InitItems.GREEN_MAID_BED)
                 .power(0.2F)
-                .requires(Items.GREEN_WOOL)
+                .requires(Items.WOOL.green())
                 .requires(ItemTags.PLANKS)
                 .save(recipeOutput);
 
         AltarRecipeBuilder.shapeless(items, InitItems.PURPLE_MAID_BED)
                 .power(0.2F)
-                .requires(Items.PURPLE_WOOL)
+                .requires(Items.WOOL.purple())
                 .requires(ItemTags.PLANKS)
                 .save(recipeOutput);
 
@@ -456,19 +464,4 @@ public class RecipeGenerator extends RecipeProvider {
         return IdentifierUtil.modLoc(path).toString();
     }
 
-    public static class Runner extends RecipeProvider.Runner {
-        public Runner(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> registries) {
-            super(packOutput, registries);
-        }
-
-        @Override
-        protected RecipeProvider createRecipeProvider(HolderLookup.Provider registries, RecipeOutput output) {
-            return new RecipeGenerator(registries, output);
-        }
-
-        @Override
-        public String getName() {
-            return "Touhou Little Maid Recipes";
-        }
-    }
 }

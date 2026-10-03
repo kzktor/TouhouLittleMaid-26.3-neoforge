@@ -15,6 +15,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Prediction;
 import net.minecraft.util.Util;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -45,8 +46,8 @@ import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 
-import javax.annotation.Nullable;
 import java.util.UUID;
+import javax.annotation.Nullable;
 
 public class BlockPicnicMat extends Block implements EntityBlock {
     public static final EnumProperty<PicnicMatPart> PART = EnumProperty.create("part", PicnicMatPart.class);
@@ -178,7 +179,7 @@ public class BlockPicnicMat extends Block implements EntityBlock {
                     }
 
                     ItemStack extract = resource.toStack(extractCount);
-                    playerIn.getInventory().placeItemBackInInventory(extract);
+                    playerIn.getInventory().placeItemBackInInventory(extract, Prediction.SERVER_ONLY);
 
                     tx.commit();
                     picnicMatCenter.refresh();

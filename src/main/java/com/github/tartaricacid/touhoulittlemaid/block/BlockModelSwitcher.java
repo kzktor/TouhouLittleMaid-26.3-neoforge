@@ -39,7 +39,6 @@ import java.util.UUID;
 
 public class BlockModelSwitcher extends BaseEntityBlock {
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
-    private static final MapCodec<BlockModelSwitcher> CODEC = simpleCodec(BlockModelSwitcher::new);
 
     public BlockModelSwitcher(Identifier id) {
         super(BlockBehaviour.Properties.of()
@@ -55,7 +54,7 @@ public class BlockModelSwitcher extends BaseEntityBlock {
     }
 
     @Override
-    public boolean canConnectRedstone(BlockState state, BlockGetter level, BlockPos pos, @Nullable Direction direction) {
+    protected boolean shouldRedstoneWireConnectTo(BlockState state, BlockGetter level, BlockPos pos, @Nullable Direction direction) {
         Direction value = state.getValue(FACING);
         if (direction != null) {
             return direction == value.getClockWise() || direction == value.getCounterClockWise();
@@ -182,10 +181,6 @@ public class BlockModelSwitcher extends BaseEntityBlock {
         }
     }
 
-    @Override
-    protected MapCodec<? extends BaseEntityBlock> codec() {
-        return CODEC;
-    }
 
     @Override
     public BlockState rotate(BlockState state, Rotation rotation) {

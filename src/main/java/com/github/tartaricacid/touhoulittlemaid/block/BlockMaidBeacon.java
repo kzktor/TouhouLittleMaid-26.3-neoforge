@@ -43,7 +43,6 @@ public class BlockMaidBeacon extends BaseEntityBlock {
     private static final VoxelShape UP_AABB = Block.box(3, 1, 3, 13, 16, 13);
     private static final VoxelShape DOWN_AABB = Block.box(6.5, 0, 6.5, 9.5, 26, 9.5);
 
-    private static final MapCodec<BlockMaidBeacon> CODEC = simpleCodec(BlockMaidBeacon::new);
 
     public BlockMaidBeacon(Identifier id) {
         super(BlockBehaviour.Properties.of()
@@ -60,10 +59,6 @@ public class BlockMaidBeacon extends BaseEntityBlock {
         super(properties);
     }
 
-    @Override
-    protected MapCodec<? extends BaseEntityBlock> codec() {
-        return CODEC;
-    }
 
     @Nullable
     @Override
@@ -145,7 +140,7 @@ public class BlockMaidBeacon extends BaseEntityBlock {
 
     @Override
     public PushReaction getPistonPushReaction(BlockState state) {
-        return PushReaction.BLOCK;
+        return PushReaction.IMMOVEABLE;
     }
 
     @Override

@@ -15,6 +15,7 @@ import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ShearsItem;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.neoforged.neoforge.common.IShearable;
 
 import java.util.List;
@@ -65,7 +66,7 @@ public class MaidShearTask extends MaidCheckRateTask {
                             (rand.nextFloat() - rand.nextFloat()) * 0.1F));
                 }
             });
-            maid.swing(InteractionHand.MAIN_HAND);
+            maid.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT);
             mainHandItem.hurtAndBreak(1, maid, EquipmentSlot.MAINHAND);
             shearableEntity = null;
         }

@@ -8,6 +8,7 @@ import com.github.tartaricacid.touhoulittlemaid.init.InitDataComponent;
 import com.github.tartaricacid.touhoulittlemaid.init.InitItems;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.Prediction;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.player.Player;
@@ -20,11 +21,10 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.neoforged.neoforge.attachment.AttachmentHolder;
 import net.neoforged.neoforge.common.NeoForge;
 import org.apache.commons.lang3.function.Consumers;
+import static net.minecraft.world.entity.Entity.TAG_ID;
 
 import java.util.Optional;
 import java.util.function.Consumer;
-
-import static net.minecraft.world.entity.Entity.TAG_ID;
 
 public final class MaidItemStorageHelper {
     /**
@@ -61,13 +61,13 @@ public final class MaidItemStorageHelper {
     public static void spawnMaidPhoto(Level worldIn, CompoundTag data, Player playerIn) {
         ItemStack photo = InitItems.PHOTO.get().getDefaultInstance();
         ValueInput input = TagValueInput.create(ProblemReporter.DISCARDING, worldIn.registryAccess(), data);
-        Optional<Entity> optional = EntityType.create(input, worldIn, EntitySpawnReason.SPAWN_ITEM_USE);
+        Optional<Entity> optional = EntityType.create(input, worldIn, new EntitySpawnRequest(EntitySpawnReason.SPAWN_ITEM_USE, false));
         if (optional.isEmpty() || !(optional.get() instanceof EntityMaid maid)) {
             return;
         }
 
         MaidItemStorageHelper.saveMaid(photo, maid, Consumers.nop());
-        playerIn.getInventory().placeItemBackInInventory(photo);
+        playerIn.getInventory().placeItemBackInInventory(photo, Prediction.SERVER_ONLY);
     }
 
     /**
@@ -109,7 +109,7 @@ public final class MaidItemStorageHelper {
         tag.remove(LivingEntity.TAG_HEALTH);
         tag.remove(LivingEntity.TAG_HURT_TIME);
         tag.remove(LivingEntity.TAG_DEATH_TIME);
-        tag.remove(LivingEntity.TAG_HURT_BY_TIMESTAMP);
+        //tag.remove(LivingEntity.TAG_HURT_BY_TIMESTAMP);
 
         tag.remove(Leashable.LEASH_TAG);
 

@@ -22,11 +22,10 @@ import java.util.Optional;
 
 public class BlockAltarExtensions implements IClientBlockExtensions {
     @Override
-    public boolean addHitEffects(BlockState state, Level world, HitResult target, ParticleEngine manager) {
-        if (target instanceof BlockHitResult blockTarget && world instanceof ClientLevel clientLevel) {
-            BlockPos pos = blockTarget.getBlockPos();
+    public boolean addHitEffects(BlockState state, Level world, BlockPos pos, Direction direction, ParticleEngine manager) {
+        if (world instanceof ClientLevel clientLevel) {
             this.getAltar(world, pos).ifPresent(altar ->
-                    this.crack(clientLevel, pos, altar.getStorageState(), blockTarget.getDirection()));
+                    this.crack(clientLevel, pos, altar.getStorageState(), direction));
         }
         return true;
     }

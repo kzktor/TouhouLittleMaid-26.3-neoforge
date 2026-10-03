@@ -13,6 +13,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -55,7 +56,7 @@ public class ItemCamera extends Item {
         if (maid.isAlive() && maid.isOwnedBy(playerIn) && !maid.isSleeping()) {
             ItemStack photo = InitItems.PHOTO.get().getDefaultInstance();
             MaidItemStorageHelper.saveMaid(photo, maid, Consumers.nop());
-            playerIn.getInventory().placeItemBackInInventory(photo);
+            playerIn.getInventory().placeItemBackInInventory(photo, Prediction.SERVER_ONLY);
 
             maid.spawnExplosionParticle();
             maid.discard();

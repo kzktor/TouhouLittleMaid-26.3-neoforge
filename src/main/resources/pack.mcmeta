@@ -1,6 +1,7 @@
 {
   "pack": {
     "description": "touhou little maid resources",
-    "pack_format": 34
+    "min_format": 121,
+    "max_format": [121, 0]
   }
 }

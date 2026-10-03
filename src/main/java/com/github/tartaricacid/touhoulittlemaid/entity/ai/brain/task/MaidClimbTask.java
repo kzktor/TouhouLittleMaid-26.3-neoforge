@@ -11,6 +11,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.entity.PositionPath;
 
 public class MaidClimbTask extends Behavior<EntityMaid> {
     public MaidClimbTask() {
@@ -23,7 +24,7 @@ public class MaidClimbTask extends Behavior<EntityMaid> {
         // 将女仆定格在楼梯中心，取消掉 x、z 轴的动量，避免爬楼梯过程中摔死
         BlockPos currentPosition = maid.blockPosition().mutable();
         Vec3 centerPos = Vec3.atCenterOf(currentPosition);
-        maid.moveOrInterpolateTo(new Vec3(centerPos.x, currentPosition.getY(), centerPos.z));
+        maid.moveOrInterpolateTo(PositionPath.of(new Vec3(centerPos.x, currentPosition.getY(), centerPos.z)));
         maid.setDeltaMovement(0, maid.getDeltaMovement().y(), 0);
     }
 

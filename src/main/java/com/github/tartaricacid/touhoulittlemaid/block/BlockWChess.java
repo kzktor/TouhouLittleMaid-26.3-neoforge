@@ -34,6 +34,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Explosion;
@@ -61,7 +62,6 @@ public class BlockWChess extends BlockJoy implements IBoardGameBlock {
     public static final EnumProperty<GomokuPart> PART = EnumProperty.create("part", GomokuPart.class);
     public static final VoxelShape AABB = Block.box(0, 0, 0, 16, 2, 16);
 
-    private static final MapCodec<BlockWChess> CODEC = simpleCodec(BlockWChess::new);
 
     public BlockWChess(Identifier id) {
         super(BlockBehaviour.Properties.of()
@@ -156,7 +156,7 @@ public class BlockWChess extends BlockJoy implements IBoardGameBlock {
             && serverLevel.getEntity(sitId) instanceof EntitySit sit
             && sit.getFirstPassenger() instanceof EntityMaid maid
         ) {
-            maid.swing(InteractionHand.MAIN_HAND);
+            maid.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT);
             if (playerLost) {
                 maid.getGameManager().markStatue(true);
             }
@@ -411,10 +411,6 @@ public class BlockWChess extends BlockJoy implements IBoardGameBlock {
         return null;
     }
 
-    @Override
-    protected MapCodec<? extends BaseEntityBlock> codec() {
-        return CODEC;
-    }
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {

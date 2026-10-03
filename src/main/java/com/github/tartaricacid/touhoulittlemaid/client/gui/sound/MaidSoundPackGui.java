@@ -1,7 +1,5 @@
 package com.github.tartaricacid.touhoulittlemaid.client.gui.sound;
 
-import com.github.tartaricacid.touhoulittlemaid.util.IdentifierUtil;
-import com.github.tartaricacid.touhoulittlemaid.util.migrate.ScreenUtil;
 import com.github.tartaricacid.touhoulittlemaid.client.gui.widget.button.FlatColorButton;
 import com.github.tartaricacid.touhoulittlemaid.client.gui.widget.button.SoundElementButton;
 import com.github.tartaricacid.touhoulittlemaid.client.gui.widget.button.SoundPackButton;
@@ -13,7 +11,10 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.init.InitSounds;
 import com.github.tartaricacid.touhoulittlemaid.network.message.SetMaidSoundIdPackage;
 import com.github.tartaricacid.touhoulittlemaid.util.GuiTools;
+import com.github.tartaricacid.touhoulittlemaid.util.IdentifierUtil;
 import com.github.tartaricacid.touhoulittlemaid.util.ParseI18n;
+import com.github.tartaricacid.touhoulittlemaid.util.migrate.ScreenUtil;
+import com.mojang.blaze3d.Blaze3D;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
@@ -23,10 +24,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.util.Util;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import org.apache.commons.lang3.StringUtils;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -125,10 +126,10 @@ public class MaidSoundPackGui extends Screen {
                 if (StringUtils.isNotBlank(url) && minecraft != null) {
                     ScreenUtil.setScreen(new ConfirmLinkScreen(yes -> {
                         if (yes) {
-                            Util.getPlatform().openUri(url);
+                            Blaze3D.openUri(URI.create(url));
                         }
                         ScreenUtil.setScreen(this);
-                    }, url, false));
+                    }, URI.create(url), false));
                 }
             }
         }).setTooltips("tooltips.touhou_little_maid.custom_sound.open_url"));

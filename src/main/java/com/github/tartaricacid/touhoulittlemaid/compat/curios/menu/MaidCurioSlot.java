@@ -5,7 +5,7 @@ import com.github.tartaricacid.touhoulittlemaid.util.migrate.I18nUtil;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.items.SlotItemHandler;
+import net.neoforged.neoforge.transfer.item.ResourceHandlerSlot;
 import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.SlotContext;
 import top.theillusivec4.curios.api.type.inventory.IDynamicStackHandler;
@@ -13,7 +13,7 @@ import top.theillusivec4.curios.mixin.core.AccessorEntity;
 
 import javax.annotation.Nonnull;
 
-public class MaidCurioSlot extends SlotItemHandler {
+public class MaidCurioSlot extends ResourceHandlerSlot {
     private final String identifier;
     private final EntityMaid maid;
     private final SlotContext slotContext;
@@ -34,7 +34,10 @@ public class MaidCurioSlot extends SlotItemHandler {
     public MaidCurioSlot(EntityMaid maid, IDynamicStackHandler handler, int index, String identifier,
                          int xPosition, int yPosition, NonNullList<Boolean> renders,
                          boolean canToggleRender) {
-        super(handler, index, xPosition, yPosition);
+        // 26.3 的 IItemHandler 已被 transfer 的 ResourceHandler 取代，槽位基类相应换成
+        // ResourceHandlerSlot，需要自己给一个「按索引写回」的 IndexModifier
+        super(handler, (slot, resource, amount) -> handler.setStackInSlot(slot, resource.toStack(amount)),
+                index, xPosition, yPosition);
         this.identifier = identifier;
         this.renderStatuses = renders;
         this.maid = maid;
@@ -84,10 +87,10 @@ public class MaidCurioSlot extends SlotItemHandler {
     }
 
     @Override
-    public void set(@Nonnull ItemStack stack) {
+    protected void setStackCopy(@Nonnull ItemStack stack) {
         ItemStack current = this.getItem();
         boolean flag = current.isEmpty() && stack.isEmpty();
-        super.set(stack);
+        super.setStackCopy(stack);
 
         if (!flag && !ItemStack.matches(current, stack) &&
             !((AccessorEntity) maid).getFirstTick()) {

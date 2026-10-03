@@ -15,6 +15,7 @@ import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
 import net.minecraft.world.entity.animal.cow.Cow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.neoforged.neoforge.transfer.CombinedResourceHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 
@@ -62,7 +63,7 @@ public class MaidMilkTask extends MaidCheckRateTask {
                 bucket.shrink(1);
                 ItemsUtil.insertItemStacked(availableInv, new ItemStack(Items.MILK_BUCKET), false, null);
             }
-            maid.swing(InteractionHand.MAIN_HAND);
+            maid.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT);
             maid.playSound(SoundEvents.COW_MILK, 1.0F, 1.0F);
             milkTarget = null;
         }

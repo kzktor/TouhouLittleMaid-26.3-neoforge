@@ -1,12 +1,12 @@
 package com.github.tartaricacid.touhoulittlemaid.block;
 
+import com.github.tartaricacid.touhoulittlemaid.blockentity.BlockEntityAltar;
 import com.github.tartaricacid.touhoulittlemaid.crafting.AltarRecipe;
 import com.github.tartaricacid.touhoulittlemaid.data.PowerAttachment;
 import com.github.tartaricacid.touhoulittlemaid.init.InitDataAttachment;
 import com.github.tartaricacid.touhoulittlemaid.init.InitRecipes;
 import com.github.tartaricacid.touhoulittlemaid.init.InitSounds;
 import com.github.tartaricacid.touhoulittlemaid.init.InitTrigger;
-import com.github.tartaricacid.touhoulittlemaid.blockentity.BlockEntityAltar;
 import com.github.tartaricacid.touhoulittlemaid.util.ItemsUtil;
 import com.github.tartaricacid.touhoulittlemaid.util.PosListData;
 import com.google.common.collect.Lists;
@@ -19,6 +19,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -42,16 +43,14 @@ import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.item.ItemUtil;
-
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Optional;
-
 import static com.github.tartaricacid.touhoulittlemaid.api.bauble.IMaidBauble.RANDOM;
 import static net.minecraft.sounds.SoundEvents.*;
 import static net.minecraft.sounds.SoundSource.BLOCKS;
 import static net.minecraft.sounds.SoundSource.PLAYERS;
 
+import java.util.List;
+import java.util.Optional;
+import javax.annotation.Nullable;
 
 public class BlockAltar extends Block implements EntityBlock {
     public BlockAltar(Identifier id) {
@@ -153,7 +152,7 @@ public class BlockAltar extends Block implements EntityBlock {
     private void takeOutItem(Level world, BlockEntityAltar altar, Player player) {
         if (altar.isCanPlaceItem() && !ItemUtil.getStack(altar.handler, 0).isEmpty()) {
             ItemStack extractItem = ItemsUtil.extractItem(altar.handler, 0, 1, false, null);
-            player.getInventory().placeItemBackInInventory(extractItem);
+            player.getInventory().placeItemBackInInventory(extractItem, Prediction.SERVER_ONLY);
             world.playSound(null, altar.getBlockPos(), ITEM_FRAME_REMOVE_ITEM, PLAYERS, 1, 1);
             altarCraft(world, altar, player);
         }

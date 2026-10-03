@@ -131,8 +131,8 @@ public class WChessRenderer implements BlockEntityRenderer<BlockEntityWChess, WC
 
         poseStack.pushPose();
         poseStack.translate(0.5, 0.75, 0.5);
-        poseStack.mulPose(Axis.YN.rotationDegrees(180 + camera.yRot));
-        poseStack.mulPose(Axis.XN.rotationDegrees(camera.xRot));
+        poseStack.rotateDegrees(Axis.YN, 180 + camera.yRot);
+        poseStack.rotateDegrees(Axis.XN, camera.xRot);
         poseStack.scale(0.03F, -0.03F, 0.03F);
 
         submitNodeCollector.submitText(
@@ -222,10 +222,10 @@ public class WChessRenderer implements BlockEntityRenderer<BlockEntityWChess, WC
                 break;
         }
 
-        poseStack.mulPose(Axis.ZN.rotationDegrees(180));
-        poseStack.mulPose(Axis.YN.rotationDegrees(facing.get2DDataValue() * 90));
+        poseStack.rotateDegrees(Axis.ZN, 180);
+        poseStack.rotateDegrees(Axis.YN, facing.get2DDataValue() * 90);
         if (facing == Direction.SOUTH || facing == Direction.NORTH) {
-            poseStack.mulPose(Axis.YN.rotationDegrees(180));
+            poseStack.rotateDegrees(Axis.YN, 180);
         }
 
         RenderType piecesRenderType = RenderTypes.entityCutout(PIECES_TEXTURE);
@@ -261,16 +261,23 @@ public class WChessRenderer implements BlockEntityRenderer<BlockEntityWChess, WC
 
         poseStack.pushPose();
         poseStack.translate(0.5, 1.5, 0.5);
-        poseStack.mulPose(Axis.ZN.rotationDegrees(180));
-        poseStack.mulPose(Axis.YN.rotationDegrees(facing.get2DDataValue() * 90));
+        poseStack.rotateDegrees(Axis.ZN, 180);
+        poseStack.rotateDegrees(Axis.YN, facing.get2DDataValue() * 90);
         if (facing == Direction.SOUTH || facing == Direction.NORTH) {
-            poseStack.mulPose(Axis.YN.rotationDegrees(180));
+            poseStack.rotateDegrees(Axis.YN, 180);
         }
 
         submitNodeCollector.submitModel(
                 this.chessModel, Unit.INSTANCE, poseStack, RenderTypes.entityCutout(TEXTURE),
-                state.lightCoords, OverlayTexture.NO_OVERLAY, 0, state.breakProgress
+                state.lightCoords, OverlayTexture.NO_OVERLAY, -1, null, 0
         );
+
+        if (state.breakProgress != null) {
+            submitNodeCollector.submitCrumblingOverlay(
+                    this.chessModel, Unit.INSTANCE, poseStack, RenderTypes.entityCutout(TEXTURE),
+                    state.lightCoords, OverlayTexture.NO_OVERLAY, -1, state.breakProgress
+            );
+        }
 
         poseStack.popPose();
     }

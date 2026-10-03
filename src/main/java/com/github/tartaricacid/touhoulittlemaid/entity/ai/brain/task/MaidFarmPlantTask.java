@@ -17,6 +17,7 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.transfer.CombinedResourceHandler;
@@ -59,7 +60,7 @@ public class MaidFarmPlantTask extends Behavior<EntityMaid> {
             BlockState cropState = world.getBlockState(cropPos);
             if (maid.canDestroyBlock(cropPos) && task.canHarvest(maid, cropPos, cropState)) {
                 task.harvest(maid, cropPos, cropState);
-                maid.swing(InteractionHand.MAIN_HAND);
+                maid.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT);
                 maid.getBrain().eraseMemory(InitBrains.TARGET_POS.get());
                 maid.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
                 if (maid.getOwner() instanceof ServerPlayer serverPlayer) {
@@ -81,7 +82,7 @@ public class MaidFarmPlantTask extends Behavior<EntityMaid> {
                         if (task.canPlant(maid, basePos, baseState, seed)) {
                             ItemStack remain = task.plant(maid, basePos, baseState, seed);
                             availableInv.insert(slot, res, remain.getCount(), tx);
-                            maid.swing(InteractionHand.MAIN_HAND);
+                            maid.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT);
                             maid.getBrain().eraseMemory(InitBrains.TARGET_POS.get());
                             maid.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
                             if (maid.getOwner() instanceof ServerPlayer serverPlayer) {

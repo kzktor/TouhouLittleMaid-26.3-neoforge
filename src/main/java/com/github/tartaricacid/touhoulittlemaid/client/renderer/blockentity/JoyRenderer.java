@@ -45,12 +45,19 @@ public abstract class JoyRenderer<T extends BlockEntityJoy> implements BlockEnti
     public void submit(JoyRenderState state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
         poseStack.pushPose();
         poseStack.translate(0.5, 1.5, 0.5);
-        poseStack.mulPose(Axis.ZN.rotationDegrees(180));
-        poseStack.mulPose(Axis.YN.rotationDegrees(180 - state.facing.get2DDataValue() * 90));
+        poseStack.rotateDegrees(Axis.ZN, 180);
+        poseStack.rotateDegrees(Axis.YN, 180 - state.facing.get2DDataValue() * 90);
         collector.submitModel(
                 this.model, Unit.INSTANCE, poseStack, RenderTypes.entityCutout(this.texture),
-                state.lightCoords, OverlayTexture.NO_OVERLAY, 0, state.breakProgress
+                state.lightCoords, OverlayTexture.NO_OVERLAY, -1, null, 0
         );
+
+        if (state.breakProgress != null) {
+            collector.submitCrumblingOverlay(
+                    this.model, Unit.INSTANCE, poseStack, RenderTypes.entityCutout(this.texture),
+                    state.lightCoords, OverlayTexture.NO_OVERLAY, -1, state.breakProgress
+            );
+        }
         poseStack.popPose();
     }
 

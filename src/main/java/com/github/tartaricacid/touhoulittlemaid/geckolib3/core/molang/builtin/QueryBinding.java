@@ -57,15 +57,15 @@ public class QueryBinding extends ContextBinding {
         var("life_time", ctx -> ctx.animatableEntity().getSeekTime() / 20.0);
         var("head_x_rotation", ctx -> ctx.data().netHeadYaw);
         var("head_y_rotation", ctx -> ctx.data().headPitch);
-        var("moon_phase", ctx ->  ctx.mc().gameRenderer.getMainCamera().attributeProbe().getValue(EnvironmentAttributes.MOON_PHASE, ctx.animationEvent().getPartialTick()));
+        var("moon_phase", ctx ->  ctx.mc().gameRenderer.mainCamera().attributeProbe().getValue(EnvironmentAttributes.MOON_PHASE, ctx.animationEvent().getPartialTick()));
         var("time_of_day", ctx -> ctx.level().dimensionType().defaultClock().map(clock ->
-                MolangUtils.normalizeTime(ctx.level().clockManager().getTotalTicks(clock))).orElseGet(() -> 0f));
+                MolangUtils.normalizeTime(ctx.level().clockManager().getInstance(clock).totalTicks())).orElseGet(() -> 0f));
         var("time_stamp", ctx -> ctx.level().getGameTime());
         var("delta_time", ctx -> ctx.animatableEntity().getStateTracker().getRenderTickDelta() / 20);
 
         entityVar("yaw_speed", QueryBinding::getYawSpeed);
         entityVar("cardinal_facing_2d", ctx -> ctx.entity().getDirection().get3DDataValue());
-        entityVar("distance_from_camera", ctx -> ctx.mc().gameRenderer.getMainCamera().position().distanceTo(ctx.entity().position()));
+        entityVar("distance_from_camera", ctx -> ctx.mc().gameRenderer.mainCamera().position().distanceTo(ctx.entity().position()));
         entityVar("eye_target_x_rotation", ctx -> ctx.entity().getViewXRot(ctx.animationEvent().getRequestedPartialTick()));
         entityVar("eye_target_y_rotation", ctx -> ctx.entity().getViewYRot(ctx.animationEvent().getRequestedPartialTick()));
         entityVar("ground_speed", ctx -> getGroundSpeed(ctx.entity()));

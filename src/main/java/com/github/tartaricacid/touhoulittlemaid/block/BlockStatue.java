@@ -31,7 +31,6 @@ import java.util.Optional;
 
 public class BlockStatue extends HorizontalDirectionalBlock implements EntityBlock {
     public static final BooleanProperty IS_TINY = BooleanProperty.create("is_tiny");
-    private static final MapCodec<BlockStatue> CODEC = simpleCodec(BlockStatue::new);
 
     public BlockStatue(Identifier id) {
         super(BlockBehaviour.Properties.of()
@@ -140,8 +139,4 @@ public class BlockStatue extends HorizontalDirectionalBlock implements EntityBlo
         });
     }
 
-    @Override
-    protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
-        return CODEC;
-    }
 }

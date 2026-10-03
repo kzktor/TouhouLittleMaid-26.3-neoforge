@@ -18,6 +18,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.ItemStack;
@@ -99,7 +100,7 @@ public final class AnimationManager {
     public static PlayState predicateOffhandHold(AnimationEvent<GeckoMaidEntity<?>> event) {
         EntityMaid maid = event.getAnimatableEntity().getMaid();
         Mob entity = maid;
-        if (!entity.swinging && !entity.isUsingItem()) {
+        if (!entity.isSwinging() && !entity.isUsingItem()) {
             ItemStack offhandItem = entity.getItemInHand(InteractionHand.OFF_HAND);
             if (offhandItem.is(Items.CROSSBOW) && CrossbowItem.isCharged(offhandItem)) {
                 return playAnimation(event, "hold_offhand:charged_crossbow", LoopType.LOOP);
@@ -123,7 +124,7 @@ public final class AnimationManager {
 
     public static PlayState predicateMainhandHold(AnimationEvent<GeckoMaidEntity<?>> event) {
         EntityMaid maid = event.getAnimatableEntity().getMaid();
-        if (!maid.swinging && !maid.isUsingItem()) {
+        if (!maid.isSwinging() && !maid.isUsingItem()) {
             ItemStack mainHandItem = maid.getItemInHand(InteractionHand.MAIN_HAND);
             PlayState gunHoldAnimation = GunClientUtil.playGunHoldAnimation(mainHandItem, event);
             if (gunHoldAnimation != null) {
@@ -163,17 +164,23 @@ public final class AnimationManager {
 
     public static PlayState predicateSwing(AnimationEvent<GeckoMaidEntity<?>> event) {
         EntityMaid maid = event.getAnimatableEntity().getMaid();
-        if (maid.swinging && !maid.isSleeping()) {
-            if (maid.swingTime == 0 && event.getAnimatableEntity().getStateTracker().setEntityTickState(EntityTickStates.SWING)) {
+        LivingEntity.SwingDescription swing = maid.getCurrentSwing();
+        if (swing != null && !maid.isSleeping()) {
+            // 26.1 的 swingTime == 0 指的是「挥击刚开始的那一 tick」。26.3 把 swingTime 收进了
+            // 私有的 SwingState，对外只剩 getCurrentSwing() 和 0~1 的动画进度：起始 tick 进度为 0，
+            // 下一 tick 起变成 1/duration。所以用「本 tick 进度仍为 0」还原那个起始 tick
+            // （setEntityTickState 保证同一个 entityTick 内只触发一次）。
+            if (maid.getSwingAnimation(1.0F) <= 0.0F
+                    && event.getAnimatableEntity().getStateTracker().setEntityTickState(EntityTickStates.SWING)) {
                 event.getCodedController().indicateReload();
             }
             var manager = event.getAnimatableEntity().getGeckoContainer().conditionManager();
-            ConditionalSwing conditionalSwing = (maid.swingingArm == InteractionHand.MAIN_HAND) ? manager.swing : manager.swingOffhand;
+            ConditionalSwing conditionalSwing = (swing.hand() == InteractionHand.MAIN_HAND) ? manager.swing : manager.swingOffhand;
             String name = conditionalSwing.doTest(maid);
             if (StringUtils.isNoneBlank(name)) {
                 return playAnimation(event, name, LoopType.PLAY_ONCE);
             }
-            String defaultSwing = (maid.swingingArm == InteractionHand.MAIN_HAND) ? "swing_hand" : "swing_offhand";
+            String defaultSwing = (swing.hand() == InteractionHand.MAIN_HAND) ? "swing_hand" : "swing_offhand";
             return playAnimation(event, defaultSwing, LoopType.PLAY_ONCE);
         }
         return PlayState.CONTINUE;
@@ -299,7 +306,8 @@ public final class AnimationManager {
     }
 
     private static boolean checkSwingAndUse(EntityMaid maid, InteractionHand hand) {
-        if (maid.swinging && maid.swingingArm == hand) {
+        LivingEntity.SwingDescription swing = maid.getCurrentSwing();
+        if (swing != null && swing.hand() == hand) {
             return false;
         }
         return !maid.isUsingItem() || maid.getUsedItemHand() != hand;

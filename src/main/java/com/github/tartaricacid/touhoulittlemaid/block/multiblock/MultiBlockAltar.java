@@ -46,7 +46,7 @@ public class MultiBlockAltar implements IMultiBlock {
                 }
             }
             // 羊毛部分 -> 鸟居
-            else if (infoState.is(Blocks.RED_WOOL)) {
+            else if (infoState.is(Blocks.WOOL.red())) {
                 if (!worldState.is(TagBlock.ALTAR_TORII)) {
                     return false;
                 }
@@ -113,6 +113,7 @@ public class MultiBlockAltar implements IMultiBlock {
     }
 
     private StructureTemplate getAltarTemplate(ServerLevel world, Identifier location) {
-        return world.getStructureManager().getOrCreate(location);
+        // 26.3 把 structureManager() 让给了结构放置管理器，结构模板管理器改叫 getStructureTemplateManager()
+        return world.getStructureTemplateManager().getOrCreate(location);
     }
 }

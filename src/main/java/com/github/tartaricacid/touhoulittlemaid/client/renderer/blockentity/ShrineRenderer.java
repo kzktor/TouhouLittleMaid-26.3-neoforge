@@ -65,18 +65,25 @@ public class ShrineRenderer implements BlockEntityRenderer<BlockEntityShrine, Sh
 
         poseStack.pushPose();
         poseStack.translate(0.5, 1.5, 0.5);
-        poseStack.mulPose(Axis.ZN.rotationDegrees(180));
-        poseStack.mulPose(Axis.YN.rotationDegrees(180 - facing.get2DDataValue() * 90));
+        poseStack.rotateDegrees(Axis.ZN, 180);
+        poseStack.rotateDegrees(Axis.YN, 180 - facing.get2DDataValue() * 90);
         collector.submitModel(
                 model, Unit.INSTANCE, poseStack, RenderTypes.entityCutout(TEXTURE),
-                state.lightCoords, OverlayTexture.NO_OVERLAY, 0, state.breakProgress
+                state.lightCoords, OverlayTexture.NO_OVERLAY, -1, null, 0
         );
+
+        if (state.breakProgress != null) {
+            collector.submitCrumblingOverlay(
+                    model, Unit.INSTANCE, poseStack, RenderTypes.entityCutout(TEXTURE),
+                    state.lightCoords, OverlayTexture.NO_OVERLAY, -1, state.breakProgress
+            );
+        }
         poseStack.popPose();
 
         if (state.hasItem) {
             poseStack.pushPose();
             poseStack.translate(0.5, 1.625, 0.5);
-            poseStack.mulPose(Axis.YN.rotationDegrees(state.itemRotation));
+            poseStack.rotateDegrees(Axis.YN, state.itemRotation);
             state.itemRenderState.submit(poseStack, collector, state.lightCoords, OverlayTexture.NO_OVERLAY, 0);
             poseStack.popPose();
         }

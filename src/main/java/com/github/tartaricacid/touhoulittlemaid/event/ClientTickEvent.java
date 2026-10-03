@@ -13,7 +13,7 @@ public class ClientTickEvent {
     @SubscribeEvent
     public static void onClientTick(net.neoforged.neoforge.client.event.ClientTickEvent.Pre event) {
         tickCount++;
-        refreshRate = Minecraft.getInstance().getWindow().getRefreshRate();
+        refreshRate = Minecraft.getInstance().options.framerateLimit().get();
     }
 
     public static int getTickCount() {

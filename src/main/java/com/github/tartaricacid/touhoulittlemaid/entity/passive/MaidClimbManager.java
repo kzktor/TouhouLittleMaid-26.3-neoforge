@@ -12,6 +12,7 @@ import net.neoforged.neoforge.common.CommonHooks;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
+import net.minecraft.world.entity.PositionPath;
 
 @MaidManagerDef(alias = "climbManager", exposeView = true)
 public class MaidClimbManager {
@@ -52,7 +53,7 @@ public class MaidClimbManager {
             if (vec3.x() % 1 != 0.5D || vec3.z() % 1 != 0.5) {
                 BlockPos currentPosition = maid.blockPosition().mutable();
                 Vec3 centerPos = Vec3.atBottomCenterOf(currentPosition);
-                maid.moveOrInterpolateTo(new Vec3(centerPos.x, vec3.y(), centerPos.z));
+                maid.moveOrInterpolateTo(PositionPath.of(new Vec3(centerPos.x, vec3.y(), centerPos.z)));
             }
             oriDelta = new Vec3(0, oriDelta.y, 0);
         }

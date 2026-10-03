@@ -496,7 +496,7 @@ public abstract class AbstractMaidContainerGui<T extends AbstractMaidContainer> 
             if (maid.isStruckByLightning()) {
                 title.append(Component.literal("❀").withStyle(ChatFormatting.DARK_RED));
             }
-            if (maid.isInvulnerable()) {
+            if (maid.getSyncInvulnerable()) {
                 title.append(Component.literal("✟").withStyle(ChatFormatting.BLUE));
             }
             list.add(title);

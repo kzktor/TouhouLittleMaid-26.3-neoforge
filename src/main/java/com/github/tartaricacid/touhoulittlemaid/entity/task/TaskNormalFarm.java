@@ -16,6 +16,7 @@ import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.tags.ItemTags;
 
 public class TaskNormalFarm implements IFarmTask {
     private static final Identifier NAME = IdentifierUtil.modLoc("farm");
@@ -57,7 +58,7 @@ public class TaskNormalFarm implements IFarmTask {
 
     @Override
     public void harvest(EntityMaid maid, BlockPos cropPos, BlockState cropState) {
-        boolean isDestroyMode = maid.getMainHandItem().getItem() instanceof HoeItem;
+        boolean isDestroyMode = maid.getMainHandItem().is(ItemTags.HOES);
         Block cropBlock = cropState.getBlock();
 
         // 先判断特殊情况

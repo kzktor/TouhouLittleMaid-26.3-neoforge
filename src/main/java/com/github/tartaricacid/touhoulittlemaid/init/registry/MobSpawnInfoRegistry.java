@@ -15,6 +15,7 @@ import net.neoforged.neoforge.event.level.LevelEvent;
 import java.util.List;
 
 import static com.github.tartaricacid.touhoulittlemaid.config.subconfig.MiscConfig.MAID_FAIRY_BLACKLIST_DIMENSION;
+import net.minecraft.util.valueproviders.UniformInt;
 
 @EventBusSubscriber
 public final class MobSpawnInfoRegistry {
@@ -33,7 +34,7 @@ public final class MobSpawnInfoRegistry {
                 List<Weighted<MobSpawnSettings.SpawnerData>> spawnerData = event.getSpawnerDataList();
                 boolean canZombieSpawn = spawnerData.stream().anyMatch(data -> data.value().type().equals(EntityTypeUtil.zombie()));
                 if (SPAWNER_DATA == null || SPAWNER_DATA.weight() != spawnProbability) {
-                    var data = new MobSpawnSettings.SpawnerData(InitEntities.FAIRY.get(), 2, 4);
+                    var data = new MobSpawnSettings.SpawnerData(InitEntities.FAIRY.get(), UniformInt.of(2, 4));
                     SPAWNER_DATA = new Weighted<>(data, spawnProbability);
                 }
                 if (canZombieSpawn) {

@@ -9,6 +9,7 @@ import com.github.tartaricacid.touhoulittlemaid.network.message.SetAttackListPac
 import com.github.tartaricacid.touhoulittlemaid.util.GuiTools;
 import com.github.tartaricacid.touhoulittlemaid.util.IdentifierUtil;
 import com.google.common.collect.Lists;
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
@@ -25,7 +26,6 @@ import org.anti_ad.mc.ipn.api.IPNButton;
 import org.anti_ad.mc.ipn.api.IPNGuiHint;
 import org.anti_ad.mc.ipn.api.IPNPlayerSideOnly;
 import org.apache.commons.lang3.StringUtils;
-import org.lwjgl.glfw.GLFW;
 
 import java.util.List;
 import java.util.Map;
@@ -161,7 +161,7 @@ public class AttackTaskConfigGui extends MaidTaskConfigGui<TaskConfigContainer> 
 
     @Override
     public boolean keyPressed(KeyEvent event) {
-        if (event.key() == GLFW.GLFW_KEY_ESCAPE && this.getMinecraft().player != null) {
+        if (event.key() == InputConstants.KEY_ESCAPE && this.getMinecraft().player != null) {
             this.getMinecraft().player.closeContainer();
         }
         return this.inputField.keyPressed(event) || this.inputField.canConsumeInput() || super.keyPressed(event);

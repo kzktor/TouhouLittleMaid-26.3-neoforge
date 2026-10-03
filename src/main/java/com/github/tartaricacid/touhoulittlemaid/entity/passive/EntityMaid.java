@@ -234,7 +234,7 @@ public class EntityMaid extends MaidManagerHost implements CrossbowAttackMob {
     public void aiStep() {
         super.aiStep();
 
-        this.updateSwingTime();
+        // 26.3 把挥击计时收进了 LivingEntity 私有的 SwingState，由 baseTick() 统一 tick，mod 不用再管
         this.getNavigationManager().tick();
 
         if (!level.isClientSide()) {
@@ -417,7 +417,7 @@ public class EntityMaid extends MaidManagerHost implements CrossbowAttackMob {
         this.aiChatManager.read(input);
 
         // 因为原版的无敌状态不会自动同步，故需要在这里手动设置同步
-        this.setSyncInvulnerable(this.isInvulnerable());
+        this.setSyncInvulnerable(this.isPermanentlyInvulnerable());
 
         // 背包内的装饰栏有特殊渲染效果，需要手动同步到客户端
         ItemStack backpackItem = ItemUtil.getStack(itemManager.getMaidInv(), BACKPACK_ITEM_SLOT);
@@ -526,7 +526,7 @@ public class EntityMaid extends MaidManagerHost implements CrossbowAttackMob {
     }
 
     @Override
-    public boolean isBaby() {
+    protected boolean canBeABaby() {
         // 没有幼年形态的女仆
         return false;
     }
@@ -621,8 +621,10 @@ public class EntityMaid extends MaidManagerHost implements CrossbowAttackMob {
     }
 
     @Override
-    public void startSleeping(BlockPos pos) {
-        super.startSleeping(pos);
+    public boolean startSleeping(BlockPos pos) {
+        if (!super.startSleeping(pos)) {
+            return false;
+        }
 
         // 睡觉时自动满血，增加好感度，并触发睡觉成就
         this.setHealth(this.getMaxHealth());
@@ -630,6 +632,7 @@ public class EntityMaid extends MaidManagerHost implements CrossbowAttackMob {
         if (this.getOwner() instanceof ServerPlayer serverPlayer) {
             InitTrigger.MAID_EVENT.get().trigger(serverPlayer, TriggerType.MAID_SLEEP);
         }
+        return true;
     }
 
     public boolean isMaidInSittingPose() {
@@ -700,7 +703,7 @@ public class EntityMaid extends MaidManagerHost implements CrossbowAttackMob {
     }
 
     public void setSyncInvulnerable(boolean isInvulnerable) {
-        super.setInvulnerable(isInvulnerable);
+        super.setPermanentlyInvulnerable(isInvulnerable);
         this.entityData.set(DATA_SYNC_INVULNERABLE, isInvulnerable);
     }
 

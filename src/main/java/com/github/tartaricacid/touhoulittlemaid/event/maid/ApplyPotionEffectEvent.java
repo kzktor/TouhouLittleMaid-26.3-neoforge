@@ -7,6 +7,7 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.init.InitTrigger;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -27,7 +28,7 @@ public final class ApplyPotionEffectEvent {
             stack.getItem().finishUsingItem(stack.copy(), world, maid);
             if (!player.isCreative()) {
                 stack.shrink(1);
-                player.getInventory().placeItemBackInInventory(new ItemStack(Items.GLASS_BOTTLE));
+                player.getInventory().placeItemBackInInventory(new ItemStack(Items.GLASS_BOTTLE), Prediction.SERVER_ONLY);
             }
             maid.playSound(SoundEvents.GENERIC_DRINK.value(), 0.6f, 0.8F + world.getRandom().nextFloat() * 0.4F);
             event.setCanceled(true);
@@ -37,7 +38,7 @@ public final class ApplyPotionEffectEvent {
             maid.removeAllEffects();
             if (!player.isCreative()) {
                 stack.shrink(1);
-                player.getInventory().placeItemBackInInventory(new ItemStack(Items.BUCKET));
+                player.getInventory().placeItemBackInInventory(new ItemStack(Items.BUCKET), Prediction.SERVER_ONLY);
             }
             maid.playSound(SoundEvents.GENERIC_DRINK.value(), 0.6f, 0.8F + world.getRandom().nextFloat() * 0.4F);
             if (player instanceof ServerPlayer serverPlayer) {

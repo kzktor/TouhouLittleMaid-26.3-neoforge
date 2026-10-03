@@ -14,12 +14,14 @@ import com.github.tartaricacid.touhoulittlemaid.network.message.ai.SaveMaidAIDat
 import com.github.tartaricacid.touhoulittlemaid.util.EntityCacheUtil;
 import com.github.tartaricacid.touhoulittlemaid.util.migrate.ScreenUtil;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.MultiLineEditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Mth;
@@ -28,13 +30,16 @@ import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.lwjgl.PointerBuffer;
-import org.lwjgl.system.MemoryStack;
-import org.lwjgl.util.tinyfd.TinyFileDialogs;
+import org.lwjgl.sdl.SDLDialog;
+import org.lwjgl.sdl.SDLProperties;
+import org.lwjgl.sdl.SDL_DialogFileCallback;
+import org.lwjgl.sdl.SDL_DialogFileFilter;
+import org.lwjgl.system.MemoryUtil;
 
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
@@ -52,6 +57,13 @@ public class SettingEditScreen extends Screen {
     private EditBox ownerName;
     private MultiLineEditBox customSetting;
     private long tipTimestamp = -1;
+
+    // SDL 的文件对话框是异步的：过滤器数组与回调必须一直存活到原生侧调用完成，
+    // 所以在这里持有，等回调触发后再一起释放（见 freeFileDialog）。
+    private @Nullable SDL_DialogFileCallback fileDialogCallback;
+    private @Nullable SDL_DialogFileFilter.Buffer fileDialogFilter;
+    private @Nullable ByteBuffer fileDialogFilterName;
+    private @Nullable ByteBuffer fileDialogFilterPattern;
 
     public SettingEditScreen(EntityMaid maid) {
         this(null, maid);
@@ -108,33 +120,79 @@ public class SettingEditScreen extends Screen {
     }
 
     private void exportSetting(MutableComponent export) {
-        try (MemoryStack memoryStack = MemoryStack.stackPush()) {
-            String title = export.getString();
-            String defaultFileName = "%s.yml".formatted(this.maid.getName().getString());
-            String path = SettingReader.getSettingsFolder().resolve(defaultFileName).toString();
-            String fileFilter = Component.translatable("gui.touhou_little_maid.button.maid_ai_chat_config.edit_custom_setting.export.format").getString();
+        // SDL 同一时间只允许一个文件对话框
+        if (this.fileDialogCallback != null) {
+            return;
+        }
+        String title = export.getString();
+        String defaultFileName = "%s.yml".formatted(this.maid.getName().getString());
+        String path = SettingReader.getSettingsFolder().resolve(defaultFileName).toString();
+        String fileFilter = Component.translatable("gui.touhou_little_maid.button.maid_ai_chat_config.edit_custom_setting.export.format").getString();
 
-            PointerBuffer filterPattern = memoryStack.mallocPointer(1);
-            filterPattern.put(memoryStack.UTF8("*.yml"));
-            filterPattern.flip();
+        MetaData metaData = getMetaData();
+        CharacterSetting setting = new CharacterSetting(metaData, this.customSetting.getValue());
 
-            String result = TinyFileDialogs.tinyfd_saveFileDialog(title, path, filterPattern, fileFilter);
-            if (StringUtils.isBlank(result)) {
-                return;
-            }
+        // 26.3 移除了 GLFW/tinyfd，原生文件对话框改用 SDL
+        this.fileDialogFilterName = MemoryUtil.memUTF8(fileFilter);
+        this.fileDialogFilterPattern = MemoryUtil.memUTF8("*.yml");
+        this.fileDialogFilter = SDL_DialogFileFilter.calloc(1);
+        this.fileDialogFilter.get(0).name(this.fileDialogFilterName).pattern(this.fileDialogFilterPattern);
 
-            File exportFile = new File(result);
-            MetaData metaData = getMetaData();
-            CharacterSetting setting = new CharacterSetting(metaData, this.customSetting.getValue());
-            setting.save(exportFile);
+        this.fileDialogCallback = SDL_DialogFileCallback.create((userdata, fileList, filter) -> {
+            // fileList 指向的原生内存只在回调期间有效，先拷成 String 再切回客户端主线程处理
+            String result = firstDialogPath(fileList);
+            Minecraft.getInstance().execute(() -> {
+                freeFileDialog();
+                if (StringUtils.isBlank(result)) {
+                    return;
+                }
+                try {
+                    setting.save(new File(result));
+                    LocalPlayer player = Minecraft.getInstance().player;
+                    if (player != null) {
+                        Component tip = Component.translatable("gui.touhou_little_maid.button.maid_ai_chat_config.edit_custom_setting.export.success", result)
+                                .withStyle(ChatFormatting.GRAY);
+                        player.sendSystemMessage(tip);
+                    }
+                } catch (IOException e) {
+                    TouhouLittleMaid.LOGGER.error("Error saving setting", e);
+                }
+            });
+        });
 
-            if (this.getMinecraft().player != null) {
-                Component tip = Component.translatable("gui.touhou_little_maid.button.maid_ai_chat_config.edit_custom_setting.export.success", result)
-                        .withStyle(ChatFormatting.GRAY);
-                this.getMinecraft().player.sendSystemMessage(tip);
-            }
-        } catch (IOException e) {
-            TouhouLittleMaid.LOGGER.error("Error saving setting", e);
+        int properties = SDLProperties.SDL_CreateProperties();
+        SDLProperties.SDL_SetStringProperty(properties, SDLDialog.SDL_PROP_FILE_DIALOG_TITLE_STRING, title);
+        SDLProperties.SDL_SetStringProperty(properties, SDLDialog.SDL_PROP_FILE_DIALOG_LOCATION_STRING, path);
+        SDLProperties.SDL_SetNumberProperty(properties, SDLDialog.SDL_PROP_FILE_DIALOG_NFILTERS_NUMBER, 1);
+        SDLProperties.SDL_SetPointerProperty(properties, SDLDialog.SDL_PROP_FILE_DIALOG_FILTERS_POINTER, this.fileDialogFilter.address());
+        SDLDialog.SDL_ShowFileDialogWithProperties(SDLDialog.SDL_FILEDIALOG_SAVEFILE, this.fileDialogCallback,
+                MemoryUtil.NULL, properties);
+        SDLProperties.SDL_DestroyProperties(properties);
+    }
+
+    /**
+     * 从 SDL 的 {@code const char * const *} 文件列表里取出第一个路径；取消时为 NULL。
+     */
+    private static String firstDialogPath(long fileList) {
+        if (fileList == MemoryUtil.NULL) {
+            return null;
+        }
+        long first = MemoryUtil.memGetAddress(fileList);
+        return first == MemoryUtil.NULL ? null : MemoryUtil.memUTF8(first);
+    }
+
+    private void freeFileDialog() {
+        MemoryUtil.memFree(this.fileDialogFilterName);
+        MemoryUtil.memFree(this.fileDialogFilterPattern);
+        this.fileDialogFilterName = null;
+        this.fileDialogFilterPattern = null;
+        if (this.fileDialogFilter != null) {
+            this.fileDialogFilter.free();
+            this.fileDialogFilter = null;
+        }
+        if (this.fileDialogCallback != null) {
+            this.fileDialogCallback.free();
+            this.fileDialogCallback = null;
         }
     }
 

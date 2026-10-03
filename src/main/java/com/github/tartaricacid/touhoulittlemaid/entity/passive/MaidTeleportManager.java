@@ -13,6 +13,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.entity.PositionPath;
 
 @MaidManagerDef(alias = "teleportManager", exposeView = true)
 public class MaidTeleportManager {
@@ -82,7 +83,7 @@ public class MaidTeleportManager {
         } else if (!canTeleportTo(new BlockPos(x, y, z))) {
             return false;
         } else {
-            maid.moveOrInterpolateTo(new Vec3(x + 0.5, y, z + 0.5), maid.getYRot(), maid.getXRot());
+            maid.moveOrInterpolateTo(PositionPath.of(new Vec3(x + 0.5, y, z + 0.5)), maid.getYRot(), maid.getXRot());
             maid.getNavigation().stop();
             maid.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
             maid.getBrain().eraseMemory(MemoryModuleType.LOOK_TARGET);

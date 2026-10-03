@@ -36,7 +36,8 @@ public class EntityGraphics {
     }
 
     public void fill(int minX, int minY, int maxX, int maxY, int z, int color) {
-        this.fill(RenderTypes.textBackground(), minX, minY, maxX, maxY, z, color);
+        // 26.3 删掉了 rendertype_text_background 管线，纯色矩形改用 core/position_color 的 debug_quads
+        this.fill(RenderTypes.debugQuads(), minX, minY, maxX, maxY, z, color);
     }
 
     public void fill(RenderType renderType, int minX, int minY, int maxX, int maxY, int color) {
@@ -61,11 +62,12 @@ public class EntityGraphics {
         int finalMaxX = maxX;
 
         this.submitNode.submitCustomGeometry(this.poseStack, renderType, (pose, consumer) -> {
+            // 纯色管线（POSITION_COLOR）没有 lightmap 元素，写 setLight 是空操作，直接不写
             Matrix4f matrix4f = pose.pose();
-            consumer.addVertex(matrix4f, finalMinX, finalMinY, z).setColor(color).setLight(this.packedLight);
-            consumer.addVertex(matrix4f, finalMinX, finalMaxY, z).setColor(color).setLight(this.packedLight);
-            consumer.addVertex(matrix4f, finalMaxX, finalMaxY, z).setColor(color).setLight(this.packedLight);
-            consumer.addVertex(matrix4f, finalMaxX, finalMinY, z).setColor(color).setLight(this.packedLight);
+            consumer.addVertex(matrix4f, finalMinX, finalMinY, z).setColor(color);
+            consumer.addVertex(matrix4f, finalMinX, finalMaxY, z).setColor(color);
+            consumer.addVertex(matrix4f, finalMaxX, finalMaxY, z).setColor(color);
+            consumer.addVertex(matrix4f, finalMaxX, finalMinY, z).setColor(color);
         });
     }
 

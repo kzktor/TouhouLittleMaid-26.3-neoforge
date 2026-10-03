@@ -8,84 +8,82 @@ import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.AdvancementType;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.ItemLike;
-
-import java.util.function.Consumer;
+import net.minecraft.world.item.Item;
 
 
 public class ChallengeAdvancement {
-    public static void generate(Consumer<AdvancementHolder> saver) {
-        AdvancementHolder root = make(Items.IRON_HELMET, "any_equipment")
+    public static void generate(BootstrapContext<Advancement> output) {
+        AdvancementHolder root = makeRoot(Items.IRON_HELMET, "any_equipment")
                 .addCriterion("maid_event", MaidEventTrigger.create(TriggerType.ANY_EQUIPMENT))
-                .save(saver, id("challenge/any_equipment").toString());
+                .save(output, id("challenge/any_equipment").toString());
 
-        generateProtect(root, saver);
+        generateProtect(root, output);
 
-        generateKill(root, saver);
+        generateKill(root, output);
     }
 
-    private static void generateProtect(AdvancementHolder root, Consumer<AdvancementHolder> saver) {
+    private static void generateProtect(AdvancementHolder root, BootstrapContext<Advancement> output) {
         AdvancementHolder protect = make(Items.ENCHANTED_GOLDEN_APPLE, "eat_enchanted_golden_apple").parent(root)
                 .addCriterion("maid_event", MaidEventTrigger.create(TriggerType.EAT_ENCHANTED_GOLDEN_APPLE))
-                .save(saver, id("challenge/eat_enchanted_golden_apple").toString());
+                .save(output, id("challenge/eat_enchanted_golden_apple").toString());
 
         makeChallenge(InitItems.ALL_NETHERITE_EQUIPMENT.get(), "all_netherite_equipment").parent(protect)
                 .rewards(AdvancementRewards.Builder.experience(50))
                 .addCriterion("maid_event", MaidEventTrigger.create(TriggerType.ALL_NETHERITE_EQUIPMENT))
-                .save(saver, id("challenge/all_netherite_equipment").toString());
+                .save(output, id("challenge/all_netherite_equipment").toString());
 
 //        ItemStack stack = ItemEntityPlaceholder.setRecipeId(new ItemStack(InitItems.ENTITY_PLACEHOLDER.get()), "spawn_lightning_bolt");
 //        AdvancementHolder lightningBolt = make(stack, "lightning_bolt").parent(protect)
 //                .addCriterion("maid_event", MaidEventTrigger.create(TriggerType.LIGHTNING_BOLT))
-//                .save(saver, id("challenge/lightning_bolt").toString());
+//                .save(output, id("challenge/lightning_bolt").toString());
 
 //        makeGoal(InitItems.MAID_100_HEALTHY.get(), "maid_100_healthy").parent(lightningBolt)
 //                .addCriterion("maid_event", MaidEventTrigger.create(TriggerType.MAID_100_HEALTHY))
-//                .save(saver, id("challenge/maid_100_healthy").toString());
+//                .save(output, id("challenge/maid_100_healthy").toString());
     }
 
-    private static void generateKill(AdvancementHolder root, Consumer<AdvancementHolder> saver) {
+    private static void generateKill(AdvancementHolder root, BootstrapContext<Advancement> output) {
         AdvancementHolder kill = makeGoal(InitItems.KILL_100.get(), "kill_100").parent(root)
                 .addCriterion("maid_event", MaidEventTrigger.create(TriggerType.KILL_100))
                 .rewards(AdvancementRewards.Builder.experience(50))
-                .save(saver, id("challenge/kill_100").toString());
+                .save(output, id("challenge/kill_100").toString());
 
         makeChallenge(InitItems.KILL_SLIME_300.get(), "kill_slime_300").parent(kill)
                 .addCriterion("maid_event", MaidEventTrigger.create(TriggerType.KILL_SLIME_300))
                 .rewards(AdvancementRewards.Builder.experience(50))
-                .save(saver, id("challenge/kill_slime_300").toString());
+                .save(output, id("challenge/kill_slime_300").toString());
 
         AdvancementHolder wither = makeChallenge(InitItems.KILL_WITHER.get(), "kill_wither").parent(kill)
                 .addCriterion("maid_event", MaidEventTrigger.create(TriggerType.KILL_WITHER))
-                .save(saver, id("challenge/kill_wither").toString());
+                .save(output, id("challenge/kill_wither").toString());
 
         makeChallenge(InitItems.KILL_DRAGON.get(), "kill_dragon").parent(wither)
                 .addCriterion("maid_event", MaidEventTrigger.create(TriggerType.KILL_DRAGON))
-                .save(saver, id("challenge/kill_dragon").toString());
+                .save(output, id("challenge/kill_dragon").toString());
     }
 
-    private static void generateOther(AdvancementHolder root, Consumer<AdvancementHolder> saver) {
+    private static void generateOther(AdvancementHolder root, BootstrapContext<Advancement> output) {
         makeGoal(Items.ENCHANTED_BOOK, "maid_fishing_enchanted_book").parent(root)
                 .addCriterion("maid_event", MaidEventTrigger.create(TriggerType.MAID_FISHING_ENCHANTED_BOOK))
-                .save(saver, id("challenge/maid_fishing_enchanted_book").toString());
+                .save(output, id("challenge/maid_fishing_enchanted_book").toString());
 
         makeGoal(Items.CAKE, "tamed_maid_in_pillager_outpost").parent(root)
                 .addCriterion("maid_event", MaidEventTrigger.create(TriggerType.TAMED_MAID_FROM_STRUCTURE))
-                .save(saver, id("challenge/tamed_maid_in_pillager_outpost").toString());
+                .save(output, id("challenge/tamed_maid_in_pillager_outpost").toString());
     }
 
-    private static Advancement.Builder make(ItemLike item, String key) {
+    private static Advancement.Builder make(Item item, String key) {
         MutableComponent title = Component.translatable(String.format("advancements.touhou_little_maid.challenge.%s.title", key));
         MutableComponent desc = Component.translatable(String.format("advancements.touhou_little_maid.challenge.%s.description", key));
 
         return Advancement.Builder.advancement().display(item, title, desc,
-                IdentifierUtil.modLoc("advancements/backgrounds/stone"),
                 AdvancementType.TASK, true, true, false);
     }
 
@@ -94,26 +92,33 @@ public class ChallengeAdvancement {
         MutableComponent desc = Component.translatable(String.format("advancements.touhou_little_maid.challenge.%s.description", key));
 
         return Advancement.Builder.advancement().display(ItemStackTemplate.fromNonEmptyStack(item), title, desc,
-                IdentifierUtil.modLoc("advancements/backgrounds/stone"),
                 AdvancementType.TASK, true, true, false);
     }
 
-    private static Advancement.Builder makeGoal(ItemLike item, String key) {
+    private static Advancement.Builder makeGoal(Item item, String key) {
         MutableComponent title = Component.translatable(String.format("advancements.touhou_little_maid.challenge.%s.title", key));
         MutableComponent desc = Component.translatable(String.format("advancements.touhou_little_maid.challenge.%s.description", key));
 
         return Advancement.Builder.advancement().display(item, title, desc,
-                IdentifierUtil.modLoc("advancements/backgrounds/stone"),
                 AdvancementType.GOAL, true, true, false);
     }
 
-    private static Advancement.Builder makeChallenge(ItemLike item, String key) {
+    private static Advancement.Builder makeChallenge(Item item, String key) {
         MutableComponent title = Component.translatable(String.format("advancements.touhou_little_maid.challenge.%s.title", key));
         MutableComponent desc = Component.translatable(String.format("advancements.touhou_little_maid.challenge.%s.description", key));
 
         return Advancement.Builder.advancement().display(item, title, desc,
-                IdentifierUtil.modLoc("advancements/backgrounds/stone"),
                 AdvancementType.CHALLENGE, true, true, false);
+    }
+
+    private static Advancement.Builder makeRoot(Item item, String key) {
+        MutableComponent title = Component.translatable(String.format("advancements.touhou_little_maid.challenge.%s.title", key));
+        MutableComponent desc = Component.translatable(String.format("advancements.touhou_little_maid.challenge.%s.description", key));
+
+        // 26.3 起只有根进度才有背景图：display(...) 不再收背景参数，改用 rootDisplay(...)
+        return Advancement.Builder.advancement().rootDisplay(item, title, desc,
+                IdentifierUtil.modLoc("advancements/backgrounds/stone"),
+                AdvancementType.TASK, true, true, false);
     }
 
     private static Identifier id(String id) {

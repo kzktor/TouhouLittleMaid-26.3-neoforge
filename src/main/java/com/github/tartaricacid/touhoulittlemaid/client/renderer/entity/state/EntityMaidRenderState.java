@@ -25,7 +25,10 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityAttachment;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BannerItem;
 import net.minecraft.world.item.BlockItem;
@@ -36,7 +39,6 @@ import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.ClientHooks;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
@@ -251,7 +253,7 @@ public class EntityMaidRenderState extends HumanoidRenderState {
     ) {
         extractEnvironmentState(maid, state);
         extractAttributeState(maid, state);
-        extractBehaviorState(maid, state);
+        extractBehaviorState(maid, state, partialTicks);
         extractModelState(maid, state);
         extractBackDecorationState(maid, state, blockModelResolver);
         extractChatBubbleState(maid, state, partialTicks);
@@ -277,10 +279,12 @@ public class EntityMaidRenderState extends HumanoidRenderState {
         state.randomNumber = maid.getUUID().getLeastSignificantBits();
     }
 
-    private static void extractBehaviorState(EntityMaid maid, EntityMaidRenderState state) {
+    private static void extractBehaviorState(EntityMaid maid, EntityMaidRenderState state, float partialTicks) {
         state.playerVehicle = maid.getVehicle() instanceof Player;
         state.sitting = maid.isMaidInSittingPose();
-        state.swingTime = maid.swingTime;
+        // 26.3 不再有公开的 swingTime，用 0~1 的挥击进度乘回 durationTicks 还原（未挥击时为 0）
+        LivingEntity.SwingDescription swing = maid.getCurrentSwing();
+        state.swingTime = swing == null ? 0 : Math.round(maid.getSwingAnimation(partialTicks) * swing.durationTicks());
         state.sleeping = maid.isSleeping();
         state.begging = maid.isBegging();
         state.swingingArms = maid.isSwingingArms();
@@ -358,7 +362,9 @@ public class EntityMaidRenderState extends HumanoidRenderState {
         }
 
         Vec3 bubbleOffset = maid.getAttachments().getNullable(EntityAttachment.NAME_TAG, 0, maid.getViewYRot(partialTicks));
-        if (bubbleOffset == null || !ClientHooks.isNameplateInRenderDistance(maid, state.distanceToCameraSq)) {
+        // 26.3 里 NeoForge 的 ClientHooks.isNameplateInRenderDistance 没了，
+        // 改名距离改由原版的 NAME_TAG_DISTANCE 属性表达，这里照 LivingEntityRenderer 的算法判断
+        if (bubbleOffset == null || state.distanceToCameraSq >= Mth.square(maid.getAttributeValue(Attributes.NAME_TAG_DISTANCE))) {
             return;
         }
 

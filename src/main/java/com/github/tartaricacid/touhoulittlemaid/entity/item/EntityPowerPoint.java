@@ -25,6 +25,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.MoveSimulationType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -138,6 +139,21 @@ public class EntityPowerPoint extends Entity implements IEntityWithComplexSpawn 
     @Override
     protected Entity.MovementEmission getMovementEmission() {
         return Entity.MovementEmission.NONE;
+    }
+
+    /**
+     * 灵力点和掉落物 / 经验球是一类东西：两边都自己跑物理。
+     * <p>
+     * {@link Entity} 的默认值是 {@code AUTHORITATIVE_SIDE}，那样客户端上
+     * {@code canSimulateMovement()} 为 false，而 {@link #tick()} 里是无条件调用
+     * {@code move(MoverType.SELF, …)} 的 —— 26.3 给 {@code Entity.move} 加了断言
+     * （{@code SharedConstants.IS_RUNNING_IN_IDE} 时才抛），开发环境一进世界就崩：
+     * {@code IllegalStateException: Attempted to move entity on a logical side not permitted to simulate movement}。
+     * 原版 {@code ItemEntity} / {@code ExperienceOrb} 都是显式声明成 {@code SERVER_AND_CLIENT}，照做。
+     */
+    @Override
+    public MoveSimulationType getMoveSimulationType() {
+        return MoveSimulationType.SERVER_AND_CLIENT;
     }
 
     @Override

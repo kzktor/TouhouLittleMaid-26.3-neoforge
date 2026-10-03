@@ -7,12 +7,12 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public record LootTableTypeCondition(Identifier lootTableType,
                                      @Nullable ResourceKey<LootTable> lootTableId,
@@ -38,7 +38,7 @@ public record LootTableTypeCondition(Identifier lootTableType,
     private boolean typeAreEquals(LootContext context) {
         ResourceKey<LootTable> currentLootTable = ResourceKey.create(Registries.LOOT_TABLE, context.getQueriedLootTableId());
         return context.getResolver().get(currentLootTable).map(lootTable ->
-                        Objects.equals(lootTable.value().getParamSet(), LootContextParamSets.REGISTRY.get(lootTableType)))
+                        Objects.equals(lootTable.value().getParamSet(), BuiltInRegistries.CONTEXT_KEY_SET.get(lootTableType)))
                 .orElse(false);
     }
 

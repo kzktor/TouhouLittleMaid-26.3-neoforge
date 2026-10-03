@@ -35,14 +35,16 @@ public final class TeleportHelper {
 
     private static boolean teleport(EntityMaid maid, double x, double y, double z) {
         BlockPos.MutableBlockPos blockPos = new BlockPos.MutableBlockPos(x, y, z);
-        while (blockPos.getY() > maid.level.getMinY() && !maid.level.getBlockState(blockPos).blocksMotion()) {
+        // 26.3 去掉了 BlockState.blocksMotion()，保留的 isSolid() 就是它原先的判定主体
+        while (blockPos.getY() > maid.level.getMinY() && !maid.level.getBlockState(blockPos).isSolid()) {
             blockPos.move(Direction.DOWN);
         }
         BlockState blockState = maid.level.getBlockState(blockPos);
-        boolean isMotion = blockState.blocksMotion();
+        boolean isMotion = blockState.isSolid();
         boolean isWater = blockState.getFluidState().is(FluidTags.WATER);
         if (isMotion && !isWater) {
-            boolean teleportIsSuccess = maid.randomTeleport(x, y, z, true);
+            // 26.3 的 randomTeleport 去掉了四参重载，必须自己给「这里不能落脚」的判定
+            boolean teleportIsSuccess = maid.randomTeleport(x, y, z, true, state -> state.isSolid());
             if (teleportIsSuccess && !maid.isSilent()) {
                 maid.level.playSound(null, maid.xo, maid.yo, maid.zo, SoundEvents.ENDERMAN_TELEPORT, maid.getSoundSource(), 1.0F, 1.0F);
                 maid.playSound(SoundEvents.ENDERMAN_TELEPORT, 1.0F, 1.0F);

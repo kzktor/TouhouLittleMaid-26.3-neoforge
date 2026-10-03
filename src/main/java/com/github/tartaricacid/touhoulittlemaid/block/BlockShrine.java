@@ -16,6 +16,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -49,7 +50,6 @@ public class BlockShrine extends BaseEntityBlock {
             Block.box(0, 16, 0, 16, 22, 16)
     );
 
-    private static final MapCodec<BlockShrine> CODEC = simpleCodec(BlockShrine::new);
 
     public BlockShrine(Identifier id) {
         super(BlockBehaviour.Properties.of()
@@ -84,7 +84,7 @@ public class BlockShrine extends BaseEntityBlock {
         if (playerIn.isShiftKeyDown()) {
             if (!shrine.isEmpty()) {
                 ItemStack storageItem = shrine.extractStorageItem();
-                playerIn.getInventory().placeItemBackInInventory(storageItem);
+                playerIn.getInventory().placeItemBackInInventory(storageItem, Prediction.SERVER_ONLY);
                 worldIn.playSound(null, pos, SoundEvents.ITEM_FRAME_REMOVE_ITEM,
                         SoundSource.PLAYERS, 1, 1);
             }
@@ -146,10 +146,6 @@ public class BlockShrine extends BaseEntityBlock {
         return this.defaultBlockState().setValue(FACING, opposite);
     }
 
-    @Override
-    protected MapCodec<? extends BaseEntityBlock> codec() {
-        return CODEC;
-    }
 
     @Nullable
     @Override

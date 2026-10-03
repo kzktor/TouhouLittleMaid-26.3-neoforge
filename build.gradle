@@ -7,7 +7,7 @@ plugins {
     id 'idea'
 
     // NeoForged 开发插件
-    id 'net.neoforged.moddev' version '2.0.141'
+    id 'net.neoforged.moddev' version '2.0.148'
 
     // Shadow 插件，用于打包依赖到 jar 包里
     id 'com.gradleup.shadow' version '9.4.1'
@@ -150,6 +150,12 @@ neoForge {
             programArguments = [
                     "--username", "tartaric_acid"
             ]
+            // 客户端 mixin、渲染器、查看器插件都只有进了世界才会生效，所以验证得越过主菜单。
+            // -Pquickplay=<存档名> 直接进 run/client/saves 下的存档；不给参数就停在主菜单。
+            if (project.hasProperty('quickplay')) {
+                programArgument '--quickPlaySingleplayer'
+                programArgument project.property('quickplay').toString()
+            }
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
 
@@ -206,11 +212,29 @@ sourceSets.main {
     }
     resources {
         srcDir 'src/generated/resources'
+        // datagen 的 HashCache 会在 --output 目录下写 .cache/，它只是增量重生成的账本，
+        // 运行期用不到；而 src/generated/resources 整个是 resources 源目录，不排掉就会被打进 jar。
+        exclude '.cache/**'
+    }
+}
+
+// Aquaculture 的编译期桩。它只被 `compileOnly` 引用（见上面 dependencies），所以既不进 jar
+// 也不进运行时类路径；把源码放在独立 source set 里是为了让它和主源码分开、便于上游出 26.3 后整体删除。
+sourceSets {
+    aquacultureStub {
+        java.srcDir 'src/aquacultureStub/java'
     }
 }
 
 configurations {
     runtimeClasspath.extendsFrom localRuntime
+
+    // 桩要编译原版 / NeoForge 的类型（ItemStack、ToolMaterial、EntityType…）。自定义 source set
+    // 默认拿不到 MDG 挂的 minecraft 类路径——MDG 把它放在 modDevCompileDependencies 上，再被主
+    // 源码集的 compileClasspath 继承——所以这里显式继承一份。
+    // 刻意不继承主源码集的 compileClasspath：那条边里含桩自己的输出（主源码集 compileOnly 了
+    // 它），会让 compileAquacultureStubJava 自己依赖自己。
+    aquacultureStubCompileClasspath.extendsFrom modDevCompileDependencies
 
     // 自定义一个 minecraftLibrary，方便引入需要 jarJar 的库
     mcLib
@@ -240,32 +264,51 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
 
     // JEI
-    implementation "maven.modrinth:jei:29.29.0.76-neoforge"
+    implementation "maven.modrinth:jei:31.8.0.53-neoforge"
 
     // Cloth Config
-    implementation "maven.modrinth:cloth-config:26.1.154+neoforge"
+    implementation "maven.modrinth:cloth-config:26.3.159+neoforge"
 
     // Jade
-    implementation "maven.modrinth:jade:26.1.10+neoforge"
+    // 刻意停在 26.3.1 而不是 26.3.4（2026-10-02 发布）：26.3.4 把 JsonConfig$CachedSupplier.get()
+    // 里 value 的赋值挪到了 onUpdate 回调之后（26.3.1 是 `T _value = value = supplier.get();`
+    // 先赋值再回调），于是一进世界前加载客户端配置就死循环：
+    //   CachedSupplier.get → onUpdate → WailaConfig.fixData → ClientPluginConfig.ensureEntry
+    //   → mergedValues 首次合并 old==null → ConfigEntry.notifyChange
+    //   → CorePlugin.lambda$registerClient$0 里监听器回读 IWailaConfig.get()
+    //   → 又回到同一个还没赋值的 CachedSupplier → StackOverflowError
+    // mergedValues 每次启动都是空的，所以 26.3.4 是必崩，与 TLM 无关。等上游修好再升。
+    implementation "maven.modrinth:jade:26.3.1+neoforge"
 
     // Curios
-    implementation "maven.modrinth:curios:15.0.0+26.1.2-neoforge"
+    // Modrinth 上最新的 curios 17.0.0-beta.2+26.3（2026-09-26）是对着更早的 NeoForge 26.3 构建编的，
+    // 它的 CuriosCommonMod 还引用 ModConfig.Type.COMMON / SERVER——这俩常量在 FML 12 里已改成
+    // LOCAL / CLIENT / SYNCED / STARTUP，于是模组构造阶段直接 NoSuchFieldError。
+    // 整包 214 处 net/neoforged 引用里只有这 2 处不解析、且都在同一个类里，所以不反编译重编译，
+    // 直接改常量池即可：tlm-port/curios-patch/patch_curios.py（COMMON→LOCAL、SERVER→SYNCED），
+    // 产出 tlm-port/libs/curios-...-patched.jar。打完补丁用 tools/scan_jar_api.py 复扫为 0 处不解析。
+    // 上游跟上 26.3.0.40-beta 后可以删掉补丁脚本换回 maven.modrinth 坐标。
+    implementation files('../libs/curios-neoforge-17.0.0-beta.2+26.3-patched.jar')
 
     // Patchouli
-    implementation "maven.modrinth:patchouli:26.1-94-beta-neoforge"
+    // 上游没有 26.3 版（最新仍是 26.1-94-beta），所以这份 jar 是本仓库里自己移植的产物，
+    // 由 tlm-port/Patchouli 构建后产出到 tlm-port/libs/。见 Patchouli/gradle.properties 的版本改动。
+    implementation files('../libs/Patchouli-26.3.jar')
 
     // IPN
     // runtimeOnly "maven.modrinth:kotlin-for-forge:6.2.0"
     // runtimeOnly "maven.modrinth:libipn:neoforge-26.1.2-6.7.2"
-    compileOnly "maven.modrinth:inventory-profiles-next:neoforge-26.1-2.3.6"
+    compileOnly "maven.modrinth:inventory-profiles-next:neoforge-26.3-2.3.8"
 
-    compileOnly "maven.modrinth:sodium:mc26.1.2-0.9.2-alpha.4-neoforge"
-    compileOnly "maven.modrinth:iris:1.11.3+26.1-neoforge"
+    compileOnly "maven.modrinth:sodium:mc26.3-0.9.3-alpha.1-neoforge"
+    compileOnly "maven.modrinth:iris:1.11.7+26.3-neoforge"
 
-    implementation "maven.modrinth:aquaculture:2.9.2-neoforge"
+    // Aquaculture 也没有 26.3 版。compat/aquaculture 的代码保持原样，改由本地桩提供编译期 API 表面
+    // ——桩只在编译类路径上，不进 jar、不进运行时，见 src/aquacultureStub/README.md。
+    compileOnly sourceSets.aquacultureStub.output
 
-    implementation "maven.modrinth:sophisticated-core:26.1.2-1.4.101.2279"
-    implementation "maven.modrinth:sophisticated-backpacks:26.1.2-3.25.89.2092"
+    implementation "maven.modrinth:sophisticated-core:26.3-1.5.3.2358"
+    implementation "maven.modrinth:sophisticated-backpacks:26.3-3.26.5.2181"
 }
 
 shadowJar {
@@ -340,6 +383,9 @@ jar {
 tasks.withType(JavaCompile).configureEach {
     options.compilerArgs += ['-Xlint:-removal']
     options.encoding = 'UTF-8'
+    // 默认 100 条的错误上限会把后面的错误尾巴藏起来，让"还剩多少"完全看不出来。
+    // 移植期需要一次看全，收敛完可以调回去。
+    options.compilerArgs += ['-Xmaxerrs', '4000']
 }
 
 // 让 idea 主动下载前置库的源码和 Javadoc

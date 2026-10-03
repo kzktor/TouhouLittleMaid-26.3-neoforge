@@ -10,6 +10,7 @@ import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ProjectileWeaponItem;
+import net.minecraft.world.item.component.SwingAnimation;
 
 public class MaidMeleeAttack {
     /**
@@ -32,7 +33,7 @@ public class MaidMeleeAttack {
                 && context.get(nearestVisibleLivingEntities).contains(target)
             ) {
                 lookTarget.set(new EntityTracker(target, true));
-                maid.swing(InteractionHand.MAIN_HAND);
+                maid.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT);
                 maid.doHurtTarget(level, target);
                 double attackSpeed = maid.getAttributeValue(Attributes.ATTACK_SPEED);
                 if (attackSpeed > 0) {

@@ -17,6 +17,7 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.neoforged.neoforge.transfer.CombinedResourceHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.item.ItemUtil;
@@ -100,7 +101,7 @@ public class MaidFeedOwnerTask extends MaidCheckRateTask {
                     ItemsUtil.insertItemStacked(inv, feedResult, false, null);
                 }
 
-                maid.swing(InteractionHand.MAIN_HAND);
+                maid.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT);
                 this.setNextCheckTickCount(5);
                 if (maid.getOwner() instanceof ServerPlayer serverPlayer) {
                     InitTrigger.MAID_EVENT.get().trigger(serverPlayer, TriggerType.MAID_FEED_PLAYER);

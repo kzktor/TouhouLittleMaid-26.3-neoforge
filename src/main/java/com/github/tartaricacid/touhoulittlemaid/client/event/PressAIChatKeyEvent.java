@@ -4,6 +4,7 @@ import com.github.tartaricacid.touhoulittlemaid.config.subconfig.AIConfig;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.network.message.ai.OpenMaidAIChatPacket;
 import com.github.tartaricacid.touhoulittlemaid.util.migrate.ScreenUtil;
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -15,7 +16,6 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.glfw.GLFW;
 
 @EventBusSubscriber(value = Dist.CLIENT)
 public class PressAIChatKeyEvent {
@@ -35,7 +35,7 @@ public class PressAIChatKeyEvent {
     @SuppressWarnings("removal")
     private static boolean keyIsMatch(InputEvent.Key event) {
         KeyMapping keyChat = Minecraft.getInstance().options.keyChat;
-        return event.getAction() == GLFW.GLFW_PRESS
+        return event.getAction() == InputConstants.PRESS
                && keyChat.matches(event.getKeyEvent());
     }
 

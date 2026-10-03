@@ -12,15 +12,13 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "functions": [
-            {
-              "components": {
-                "patchouli:book": "touhou_little_maid:memorizable_gensokyo"
-              },
-              "function": "minecraft:set_components"
+          "name": "patchouli:guide_book",
+          "modifier": {
+            "type": "minecraft:set_components",
+            "components": {
+              "patchouli:book": "touhou_little_maid:memorizable_gensokyo"
             }
-          ],
-          "name": "patchouli:guide_book"
+          }
         }
       ],
       "rolls": 1.0

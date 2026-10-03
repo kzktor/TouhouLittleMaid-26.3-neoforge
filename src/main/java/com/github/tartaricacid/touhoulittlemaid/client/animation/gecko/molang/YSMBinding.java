@@ -130,13 +130,13 @@ public class YSMBinding extends ContextBinding {
         livingEntityVar("offhand_charged_crossbow", ctx -> isChargedCrossbow(ctx, InteractionHand.OFF_HAND));
         maidEntityVar("is_fishing", YSMBinding::isFishing);
 
-        livingEntityVar("swinging", ctx -> ctx.entity().swinging);
-        livingEntityVar("swing_time", ctx -> ctx.entity().swingTime);
+        livingEntityVar("swinging", ctx -> ctx.entity().isSwinging());
+        livingEntityVar("swing_time", ctx -> getSwingTime(ctx.entity()));
         livingEntityVar("swinging_arm", ctx -> {
-            InteractionHand hand = ctx.entity().swingingArm;
-            return hand == InteractionHand.MAIN_HAND ? 0 : 1;
+            LivingEntity.SwingDescription swing = ctx.entity().getCurrentSwing();
+            return swing != null && swing.hand() == InteractionHand.OFF_HAND ? 1 : 0;
         });
-        livingEntityVar("attack_time", ctx -> ctx.entity().getAttackAnim(ctx.animationEvent().getPartialTick()));
+        livingEntityVar("attack_time", ctx -> ctx.entity().getSwingAnimation(ctx.animationEvent().getPartialTick()));
 
         playerVar("texture_name", new TextureNameVariable());
         playerVar("first_person_mod_hide", new FirstPersonModHideVariable());
@@ -158,7 +158,8 @@ public class YSMBinding extends ContextBinding {
         playerVar("swim_speed", ctx -> ctx.entity().getAttributeValue(NeoForgeMod.SWIM_SPEED));
         playerVar("entity_gravity", ctx -> ctx.entity().getAttributeValue(Attributes.GRAVITY));
         playerVar("step_height_addition", ctx -> ctx.entity().getAttributeValue(Attributes.STEP_HEIGHT) - 0.6);
-        playerVar("nametag_distance", ctx -> ctx.entity().getAttributeValue(NeoForgeMod.NAMETAG_DISTANCE));
+        // 26.3 把 NeoForge 的 NAMETAG_DISTANCE 属性收编成了原版 Attributes.NAME_TAG_DISTANCE
+        playerVar("nametag_distance", ctx -> ctx.entity().getAttributeValue(Attributes.NAME_TAG_DISTANCE));
 
         clientPlayerVar("elytra_rot_x", ctx -> Math.toDegrees(ctx.entity().elytraAnimationState.getRotX(ctx.animationEvent().getRequestedPartialTick())));
         clientPlayerVar("elytra_rot_y", ctx -> Math.toDegrees(ctx.entity().elytraAnimationState.getRotY(ctx.animationEvent().getRequestedPartialTick())));
@@ -233,6 +234,15 @@ public class YSMBinding extends ContextBinding {
         var stateStacker = ctx.animatableEntity().getStateTracker();
         var posDelta = stateStacker.getPositionDelta();
         return 20 * Mth.sqrt((float) ((posDelta.x * posDelta.x) + (posDelta.z * posDelta.z))) / stateStacker.getRenderTickDelta();
+    }
+
+    /**
+     * 26.3 的 SwingState 不再对外暴露 swingTime，只给 0~1 的挥击进度。
+     * 进度 = swingTime / durationTicks，乘回去即可还原模型包在用的 swing_time 变量（未挥击时为 0）。
+     */
+    private static int getSwingTime(LivingEntity entity) {
+        LivingEntity.SwingDescription swing = entity.getCurrentSwing();
+        return swing == null ? 0 : Math.round(entity.getSwingAnimation(1.0F) * swing.durationTicks());
     }
 
     private static float getXxa(IContext<LivingEntity> ctx) {

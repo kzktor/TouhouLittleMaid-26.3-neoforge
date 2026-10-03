@@ -15,6 +15,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.common.data.BlockTagsProvider;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Stream;
 
 public class TagBlock extends BlockTagsProvider {
     /**
@@ -100,7 +101,7 @@ public class TagBlock extends BlockTagsProvider {
 
         tag(TASK_GRASS_HARVEST)
                 .addTag(BlockTags.SMALL_FLOWERS)
-                .add(
+                .addAll(Stream.of(
                         Blocks.SHORT_GRASS,
                         Blocks.FERN,
                         Blocks.BUSH,
@@ -122,7 +123,7 @@ public class TagBlock extends BlockTagsProvider {
                         Blocks.LEAF_LITTER,
                         Blocks.SHORT_DRY_GRASS,
                         Blocks.TALL_DRY_GRASS
-                );
+                        ).map(block -> block.builtInRegistryHolder().key()));
 
         tag(MAID_JUMP_FORBIDDEN_BLOCK)
                 .addTag(BlockTags.DOORS)

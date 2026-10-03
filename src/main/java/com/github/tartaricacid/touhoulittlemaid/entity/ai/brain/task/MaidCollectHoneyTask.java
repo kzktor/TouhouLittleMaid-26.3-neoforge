@@ -18,6 +18,7 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiRecord;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BeehiveBlock;
 import net.minecraft.world.level.block.Block;
@@ -97,7 +98,7 @@ public class MaidCollectHoneyTask extends MaidCheckRateTask {
                 }
                 level.playSound(null, maid.getX(), maid.getY(), maid.getZ(), SoundEvents.BOTTLE_FILL, SoundSource.BLOCKS, 1.0F, 1.0F);
                 resetHoneyLevel(level, hiveBlockState, hivePos);
-                maid.swing(InteractionHand.MAIN_HAND);
+                maid.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT);
                 transaction.commit();
             }
         }
@@ -114,7 +115,7 @@ public class MaidCollectHoneyTask extends MaidCheckRateTask {
                 }
                 level.playSound(null, maid.getX(), maid.getY(), maid.getZ(), SoundEvents.BEEHIVE_SHEAR, SoundSource.BLOCKS, 1.0F, 1.0F);
                 resetHoneyLevel(level, hiveBlockState, hivePos);
-                maid.swing(InteractionHand.MAIN_HAND);
+                maid.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT);
                 maid.getMainHandItem().hurtAndBreak(1, maid, EquipmentSlot.MAINHAND);
                 transaction.commit();
                 return true;

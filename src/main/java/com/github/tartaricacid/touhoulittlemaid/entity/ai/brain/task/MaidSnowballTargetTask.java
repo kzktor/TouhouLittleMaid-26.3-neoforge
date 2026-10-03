@@ -14,6 +14,7 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.Snowball;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.SnowballItem;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.Optional;
@@ -65,9 +66,9 @@ public class MaidSnowballTargetTask extends Behavior<EntityMaid> {
             if (canThrow && canSee) {
                 canThrow = false;
                 if (owner.getMainHandItem().getItem() instanceof SnowballItem) {
-                    owner.swing(InteractionHand.MAIN_HAND);
+                    owner.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT);
                 } else {
-                    owner.swing(InteractionHand.OFF_HAND);
+                    owner.swing(InteractionHand.OFF_HAND, SwingAnimation.DEFAULT);
                 }
                 BehaviorUtils.lookAtEntity(owner, target);
                 performRangedAttack(owner, target);

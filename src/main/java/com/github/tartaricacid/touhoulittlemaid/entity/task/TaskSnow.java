@@ -8,10 +8,10 @@ import com.github.tartaricacid.touhoulittlemaid.util.SoundUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.ShovelItem;
 import net.minecraft.world.level.block.SnowLayerBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -46,7 +46,8 @@ public class TaskSnow implements IFarmTask {
     @Override
     public void harvest(EntityMaid maid, BlockPos cropPos, BlockState cropState) {
         ItemStack mainHandItem = maid.getMainHandItem();
-        if (mainHandItem.getItem() instanceof ShovelItem) {
+        // 26.3 移除了 ShovelItem 这类工具物品类，改成按物品标签判断
+        if (mainHandItem.is(ItemTags.SHOVELS)) {
             if (maid.destroyBlock(cropPos)) {
                 mainHandItem.hurtAndBreak(1, maid, EquipmentSlot.MAINHAND);
             }

@@ -70,8 +70,15 @@ public class MaidBedRenderer implements BlockEntityRenderer<BlockEntityMaidBed, 
 
         collector.submitModel(
                 model, Unit.INSTANCE, poseStack, getRenderType(dyeColor, texture),
-                state.lightCoords, OverlayTexture.NO_OVERLAY, 0, state.breakProgress
+                state.lightCoords, OverlayTexture.NO_OVERLAY, -1, null, 0
         );
+
+        if (state.breakProgress != null) {
+            collector.submitCrumblingOverlay(
+                    model, Unit.INSTANCE, poseStack, getRenderType(dyeColor, texture),
+                    state.lightCoords, OverlayTexture.NO_OVERLAY, -1, state.breakProgress
+            );
+        }
 
         poseStack.popPose();
     }

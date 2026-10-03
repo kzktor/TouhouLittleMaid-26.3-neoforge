@@ -48,15 +48,15 @@ public class GeckoLayerMaidBanner implements GeoLayerRenderer<EntityMaidRenderSt
             data.modelState.visitLocatorGroup(GeoLocatorType.BACKPACK, poseStack, locator -> {
                 locator.translate(0, 0.75, 0.3);
                 locator.scale(0.65F, -0.65F, -0.65F);
-                locator.mulPose(Axis.YN.rotationDegrees(180));
-                locator.mulPose(Axis.XN.rotationDegrees(5));
+                locator.rotateDegrees(Axis.YN, 180);
+                locator.rotateDegrees(Axis.XN, 5);
 
                 // 杆子
                 int light = state.lightCoords;
                 RenderType renderType = RenderTypes.entityCutout(TEXTURE);
                 submitNode.submitModel(
                         banner, Unit.INSTANCE, poseStack, renderType, light,
-                        OverlayTexture.NO_OVERLAY, state.outlineColor, null
+                        OverlayTexture.NO_OVERLAY, -1, null, state.outlineColor
                 );
 
                 BannerPatternLayers patterns = state.backBanner.patterns;
@@ -64,15 +64,15 @@ public class GeckoLayerMaidBanner implements GeoLayerRenderer<EntityMaidRenderSt
                 SpriteId sprite = Sheets.BANNER_BASE;
 
                 // 旗帜图案
-                poseStack.mulPose(Axis.YN.rotationDegrees(90));
+                poseStack.rotateDegrees(Axis.YN, 90);
                 poseStack.translate(0.75, 0.2, 0.1);
                 submitNode.submitModel(
                         flag, 0f, poseStack, light, NO_OVERLAY, -1,
-                        sprite, sprites, state.outlineColor, null
+                        sprite, sprites, state.outlineColor
                 );
                 submitPatterns(
                         sprites, poseStack, submitNode, light, NO_OVERLAY, flag,
-                        0f, true, baseColor, patterns, null
+                        0f, true, baseColor, patterns
                 );
             });
         }

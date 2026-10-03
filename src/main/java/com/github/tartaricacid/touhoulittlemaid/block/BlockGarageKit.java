@@ -60,7 +60,6 @@ import static net.minecraft.world.entity.EntitySpawnReason.SPAWN_ITEM_USE;
 
 public class BlockGarageKit extends HorizontalDirectionalBlock implements EntityBlock {
     public static final VoxelShape BLOCK_AABB = Block.box(4, 0, 4, 12, 16, 12);
-    private static final MapCodec<BlockGarageKit> CODEC = simpleCodec(BlockGarageKit::new);
 
     public BlockGarageKit(Identifier id) {
         super(BlockBehaviour.Properties.of()
@@ -201,8 +200,4 @@ public class BlockGarageKit extends HorizontalDirectionalBlock implements Entity
         builder.add(FACING);
     }
 
-    @Override
-    protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
-        return CODEC;
-    }
 }

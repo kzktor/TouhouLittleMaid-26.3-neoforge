@@ -13,6 +13,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Prediction;
 import net.minecraft.util.Util;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -25,12 +26,11 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
-
-import javax.annotation.Nullable;
-import java.util.UUID;
-
 import static com.github.tartaricacid.touhoulittlemaid.util.ItemsUtil.canItemInsert;
 import static net.minecraft.network.syncher.EntityDataSerializers.COMPONENT;
+
+import java.util.UUID;
+import javax.annotation.Nullable;
 
 public class EntityTombstone extends Entity {
     public static final Identifier ENTITY_ID = IdentifierUtil.modLoc("tombstone");
@@ -100,7 +100,7 @@ public class EntityTombstone extends Entity {
                 int size = this.items.getCapacityAsInt(i, this.items.getResource(i));
                 ItemStack extractItem = ItemsUtil.extractItem(this.items, i, size, false, null);
                 if (!extractItem.isEmpty()) {
-                    player.getInventory().placeItemBackInInventory(extractItem);
+                    player.getInventory().placeItemBackInInventory(extractItem, Prediction.SERVER_ONLY);
                 }
             }
 

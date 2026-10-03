@@ -18,6 +18,7 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.transfer.CombinedResourceHandler;
@@ -73,7 +74,7 @@ public class MaidStealEdibleUseTask extends Behavior<EntityMaid> {
                     if (result) {
                         int points = edibleBlock.getFavorabilityPoints(maid, blockPos, blockState);
                         maid.getFavorabilityManager().apply(Type.STEAL_EDIBLE_BLOCK, points);
-                        maid.swing(InteractionHand.MAIN_HAND);
+                        maid.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT);
                     }
                     maid.getBrain().eraseMemory(InitBrains.TARGET_POS.get());
                     maid.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
@@ -94,7 +95,7 @@ public class MaidStealEdibleUseTask extends Behavior<EntityMaid> {
                     if (edibleBlock.canPlaceAsFood(maid, stack, i)) {
                         boolean result = edibleBlock.placeAsFood(maid, blockPos, stack, i);
                         if (result) {
-                            maid.swing(InteractionHand.MAIN_HAND);
+                            maid.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT);
                             //Fixme 替换可变的ItemStack
                             ItemsUtil.extractItem(inv, i, originalAmount - stack.count(), false, null);
                         }
